@@ -1,0 +1,2 @@
+DROP FULLTEXT INDEX ON Customers;
+GO

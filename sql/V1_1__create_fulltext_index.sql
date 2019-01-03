@@ -1,0 +1,2 @@
+CREATE FULLTEXT INDEX ON Customers(Name) KEY INDEX CustomerPK;
+GO

@@ -1,0 +1,24 @@
+version: '2.1'
+services:
+  mssql:
+    build: ./docker/mssql-server-linux-fts
+    container_name: mssql-server-linux-fts
+    environment:
+      ACCEPT_EULA: Y
+      SA_PASSWORD: Password123
+    ports:
+      - "1433:1433"
+    healthcheck:
+      test: "/initdb.sh"
+      interval: 5s
+      timeout: 50s
+      retries: 10
+  flyway:
+    image: boxfuse/flyway:5.1.4
+    container_name: flyway_migration
+    volumes:
+      - ./sql:/flyway/sql
+    command: -url=jdbc:sqlserver://mssql:1433;databaseName=TestDb -user=sa -password=Password123 migrate
+    depends_on:
+      mssql:
+        condition: service_healthy

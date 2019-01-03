@@ -1,0 +1,50 @@
+= Flyway - MS SQL Server DROP FULLTEXT INDEX issue
+
+Replicates the problem described in this https://stackoverflow.com/q/52332529/6797663[Stack Overflow question]
+
+The underlying problem is fixed in https://github.com/flyway/flyway/issues/2071[Flyway 5.2.0].
+
+The problem also affects `CREATE FULLTEXT INDEX`
+
+=== Replicating the error
+    docker-compose up --build
+
+    flyway_migration | Flyway Community Edition 5.1.4 by Boxfuse
+    ...
+    flyway_migration | ERROR: Migration of schema [dbo] to version 1.1 - create fulltext index failed! Changes successfully rolled back.
+    flyway_migration | ERROR:
+    flyway_migration | Migration V1_1__create_fulltext_index.sql failed
+    flyway_migration | ------------------------------------------------
+    flyway_migration | SQL State  : S0000
+    flyway_migration | Error Code : 574
+    flyway_migration | Message    : CREATE FULLTEXT INDEX statement cannot be used inside a user transaction.
+    flyway_migration | Location   : /flyway/sql/V1_1__create_fulltext_index.sql (/flyway/sql/V1_1__create_fulltext_index.sql)
+    flyway_migration | Line       : 1
+    flyway_migration | Statement  : CREATE FULLTEXT INDEX ON Customers(Name) KEY INDEX CustomerPK;
+
+=== The fix
+Update the flyway version in `docker-compose.yml` to 5.2.0
+
+Replace:
+
+  flyway:
+    image: boxfuse/flyway:5.1.4
+
+With:
+
+  flyway:
+    image: boxfuse/flyway:5.2.0
+
+And run again:
+
+    docker-compose up --build
+
+    flyway_migration | Flyway Community Edition 5.2.0 by Boxfuse
+    ...
+    flyway_migration | Successfully validated 3 migrations (execution time 00:00.016s)
+    flyway_migration | Creating Schema History table: [TestDb].[dbo].[flyway_schema_history]
+    flyway_migration | Current version of schema [dbo]: << Empty Schema >>
+    flyway_migration | Migrating schema [dbo] to version 1.0 - init
+    flyway_migration | Migrating schema [dbo] to version 1.1 - create fulltext index [non-transactional]
+    flyway_migration | Migrating schema [dbo] to version 1.2 - drop fulltext index [non-transactional]
+    flyway_migration | Successfully applied 3 migrations to schema [dbo] (execution time 00:00.174s)
